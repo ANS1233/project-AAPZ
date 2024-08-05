@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: servicex
+  namespace: servicex
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: servicex
+  template:
+    metadata:
+      labels:
+        app: servicex
+    spec:
+      containers:
+      - name: servicex
+        image: ansans1/s2s:latest
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: config-volume
+          mountPath: /app/kpf/enable-config
+        - name: secret-volume
+          mountPath: /app/kpf/secret
+      volumes:
+      - name: config-volume
+        configMap:
+          name: cleverbit-config
+          items:
+            - key: Cleverbit__Enabled
+              path: Cleverbit__Enabled
+      - name: secret-volume
+        secret:
+          secretName: servicex-secret
+          items:
+            - key: Cleverbit__Url
+              path: Cleverbit__Url

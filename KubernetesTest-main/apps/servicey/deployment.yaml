@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: servicey
+  namespace: servicey
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: servicey
+  template:
+    metadata:
+      labels:
+        app: servicey
+    spec:
+      containers:
+      - name: servicey
+        image: ansans1/s2s:latest
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: config-volume
+          mountPath: /app/kpf/enable-config
+        - name: secret-volume
+          mountPath: /app/kpf/secret
+      volumes:
+      - name: config-volume
+        configMap:
+          name: cleverbit-config
+          items:
+            - key: Cleverbit__Enabled
+              path: Cleverbit__Enabled
+      - name: secret-volume
+        secret:
+          secretName: servicey-secret
+          items:
+            - key: Cleverbit__Url
+              path: Cleverbit__Url

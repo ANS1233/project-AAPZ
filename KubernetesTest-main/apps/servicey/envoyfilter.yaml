@@ -1,0 +1,30 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: add-jwt-header
+  namespace: servicey
+spec:
+  workloadSelector:
+    labels:
+      app: servicey
+  configPatches:
+  - applyTo: HTTP_FILTER
+    match:
+      context: SIDECAR_INBOUND
+      listener:
+        filterChain:
+          filter:
+            name: "envoy.http_connection_manager"
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: envoy.lua
+        typed_config:
+          "@type": "type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua"
+          inlineCode: |
+            function envoy_on_request(request_handle)
+              local jwt_payload = request_handle:headers():get("Authorization")
+              if jwt_payload then
+                request_handle:headers():replace("X-JWT-PAYLOAD", jwt_payload)
+              end
+            end

@@ -1,0 +1,38 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: servicex
+  namespace: servicex
+spec:
+  hosts:
+  - "servicex.cb-interview.com"
+  gateways:
+  - servicex-gateway
+  http:
+  - match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        host: servicex
+        port:
+          number: 8080
+    rewrite:
+      uri: "/"
+
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: servicex-jwt
+  namespace: servicex
+spec:
+  selector:
+    matchLabels:
+      app: servicex
+  rules:
+  - from:
+    - source:
+        requestPrincipals: ["testing@secure.istio.io/*"]
+    to:
+    - operation:
+        paths: ["/"]
